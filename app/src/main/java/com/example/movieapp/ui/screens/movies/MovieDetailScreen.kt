@@ -18,7 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.movieapp.data.MockDataSource
 import com.example.movieapp.domain.Movie
 import com.example.movieapp.ui.screens.favorites.favoriteMovies
 
@@ -28,39 +27,37 @@ fun MovieDetailScreen(
     movieId: Int,
     navController: NavController
 ) {
-    val mockDataSource = MockDataSource()
-    val movies = mockDataSource.getMovies()
-
-    val movie = movies.find { it.id == movieId }?.let { dataMovie ->
+    // Получаем фильм по ID (пока заглушка)
+    val movie = remember(movieId) {
+        // Временно создаем фильм для демонстрации
         Movie(
-            id = dataMovie.id,
-            title = dataMovie.title,
-            originalTitle = dataMovie.originalTitle,
-            posterUrl = dataMovie.posterUrl,
-            year = dataMovie.year,
-            rating = dataMovie.rating,
-            duration = dataMovie.duration,
-            genres = dataMovie.genres,
-            description = dataMovie.description,
-            director = dataMovie.director,
-            cast = dataMovie.cast,
-            country = dataMovie.country,
-            ageRating = dataMovie.ageRating,
-            budget = dataMovie.budget,
-            boxOffice = dataMovie.boxOffice
+            id = movieId,
+            title = "Фильм #$movieId",
+            originalTitle = "Movie #$movieId",
+            posterUrl = "",
+            year = 2024,
+            rating = 5.0,
+            duration = 120,
+            genres = listOf("Демо"),
+            description = "Это тестовый фильм из API JSONPlaceholder. Здесь будет описание.",
+            director = "JSONPlaceholder",
+            cast = listOf("Автор"),
+            country = "Online",
+            ageRating = "0+",
+            budget = 0,
+            boxOffice = 0
         )
     }
 
     var isFavorite by remember { mutableStateOf(false) }
 
-    if (movie != null) {
-        isFavorite = favoriteMovies.contains(movie)
-    }
+    // Проверяем, есть ли фильм в избранном
+    isFavorite = favoriteMovies.any { it.id == movieId }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(movie?.title ?: "Детали фильма") }
+                title = { Text(movie.title) }
             )
         }
     ) { paddingValues ->
@@ -70,45 +67,38 @@ fun MovieDetailScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            if (movie != null) {
-                Text(text = "Название: ${movie.title}")
-                Text(text = "Год: ${movie.year}")
-                Text(text = "Рейтинг: ${movie.rating}")
+            Text(text = "Название: ${movie.title}")
+            Text(text = "Год: ${movie.year}")
+            Text(text = "Рейтинг: ${movie.rating}")
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    onClick = {
-                        if (isFavorite) {
-                            favoriteMovies.remove(movie)
-                        } else {
-                            favoriteMovies.add(movie)
-                        }
-                        isFavorite = !isFavorite
+            Text(text = "Описание:")
+            Text(text = movie.description)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    if (isFavorite) {
+                        favoriteMovies.removeAll { it.id == movieId }
+                    } else {
+                        favoriteMovies.add(movie)
                     }
-                ) {
-                    Text(
-                        text = if (isFavorite) "✓ В избранном" else "Добавить в избранное"
-                    )
+                    isFavorite = !isFavorite
                 }
+            ) {
+                Text(
+                    text = if (isFavorite) "✓ В избранном" else "Добавить в избранное"
+                )
+            }
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Button(
-                    onClick = { navController.popBackStack() }
-                ) {
-                    Text(text = "Назад к списку")
-                }
-            } else {
-                Text(text = "Фильм не найден")
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = { navController.popBackStack() }
-                ) {
-                    Text(text = "Назад")
-                }
+            Button(
+                onClick = { navController.popBackStack() }
+            ) {
+                Text(text = "Назад к списку")
             }
         }
     }

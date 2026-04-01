@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.movieapp.domain.Movie
 import com.example.movieapp.domain.usecases.GetMoviesUseCase
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,8 +29,6 @@ class MoviesViewModel(
     fun loadMovies() {
         viewModelScope.launch {
             _uiState.value = MoviesState.Loading
-            delay(1000)
-
             try {
                 val movies = getMoviesUseCase()
                 _uiState.value = MoviesState.Success(movies)
