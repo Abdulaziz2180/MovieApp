@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MovieApp2</string>
+    <string name="movies_title">Фильмы</string>
+    <string name="favorites_title">Избранное</string>
+</resources>
