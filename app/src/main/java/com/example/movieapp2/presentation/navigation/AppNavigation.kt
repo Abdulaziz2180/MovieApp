@@ -23,6 +23,8 @@ import com.example.movieapp2.presentation.films.MovieListScreen
 import com.example.movieapp2.presentation.settings.FilterScreen
 import com.example.movieapp2.presentation.settings.FilterViewModel
 import com.example.movieapp2.presentation.settings.FilterViewModelFactory
+import com.example.movieapp2.presentation.profile.ProfileScreen
+import com.example.movieapp2.presentation.profile.EditProfileScreen
 
 @Composable
 fun BottomNavBar(navController: NavHostController) {
@@ -118,6 +120,14 @@ fun MainNavigation(
                 MovieDetailsView(
                     onNavigateBack = { navController.popBackStack() }
                 )
+            }
+
+            composable(route = Screen.Profile.route) {
+                ProfileScreen(navController = navController)
+            }
+
+            composable(route = Screen.EditProfile.route) {
+                EditProfileScreen(navController = navController)
             }
         }
     }

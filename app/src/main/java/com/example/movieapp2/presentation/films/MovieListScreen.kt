@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,6 +41,8 @@ fun MovieListScreen(
     val isFilterActive by listViewModel.isFilterActive.collectAsState()
     val scope = rememberCoroutineScope()
 
+    var searchText by remember { mutableStateOf("") }
+
     val db = remember { AppDatabase.getInstance(context) }
     val favRepository = remember { FavoritesRepositoryImpl(db) }
 
@@ -63,45 +66,70 @@ fun MovieListScreen(
             )
         }
     ) { paddingValues ->
-        when (val state = uiStateValue) {
-            is MovieListUiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF6200EE))
-                }
-            }
-            is MovieListUiState.Success -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.movies, key = { it.id }) { movie ->
-                        MovieCard(
-                            movie = movie,
-                            onClick = { onMovieClick(movie.id) },
-                            onFavoriteClick = {
-                                Toast.makeText(context, "Сохранено: ${movie.title}", Toast.LENGTH_SHORT).show()
-                                scope.launch {
-                                    val favorite = FavoriteMovieEntity(
-                                        movieId = movie.id,
-                                        title = movie.title,
-                                        posterUrl = movie.poster?.url,
-                                        year = movie.year,
-                                        rating = movie.rating?.averageScore,
-                                        genres = movie.genres?.joinToString(",")
-                                    )
-                                    favRepository.addToFavorites(favorite)
-                                }
-                            }
-                        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            // Поле поиска
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                label = { Text("Поиск по названию") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true
+            )
+
+            when (val state = uiStateValue) {
+                is MovieListUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color(0xFF6200EE))
                     }
                 }
-            }
-            is MovieListUiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Ошибка: ${state.message}", color = Color.Red)
+                is MovieListUiState.Success -> {
+                    val filteredBySearch = if (searchText.isBlank()) {
+                        state.movies
+                    } else {
+                        state.movies.filter { movie ->
+                            movie.title.contains(searchText, ignoreCase = true) ||
+                                    (movie.originalTitle?.contains(searchText, ignoreCase = true) == true)
+                        }
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(filteredBySearch, key = { it.id }) { movie ->
+                            MovieCard(
+                                movie = movie,
+                                onClick = { onMovieClick(movie.id) },
+                                onFavoriteClick = {
+                                    Toast.makeText(context, "Сохранено: ${movie.title}", Toast.LENGTH_SHORT).show()
+                                    scope.launch {
+                                        val favorite = FavoriteMovieEntity(
+                                            movieId = movie.id,
+                                            title = movie.title,
+                                            posterUrl = movie.poster?.url,
+                                            year = movie.year,
+                                            rating = movie.rating?.averageScore,
+                                            genres = movie.genres?.joinToString(",")
+                                        )
+                                        favRepository.addToFavorites(favorite)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+                is MovieListUiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Ошибка: ${state.message}", color = Color.Red)
+                    }
                 }
             }
         }
@@ -155,7 +183,6 @@ private fun MovieCard(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "★ ${movie.averageScore}",
@@ -171,7 +198,6 @@ private fun MovieCard(
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
-
 
                 val yearAndGenres = buildString {
                     movie.year?.let { append(it) }
