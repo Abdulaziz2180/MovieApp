@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.filled.Person
 
 data class BottomNavItem(
     val title: String,
@@ -15,5 +16,6 @@ data class BottomNavItem(
 val bottomNavItems = listOf(
     BottomNavItem("Фильмы", Screen.Movies.route, Icons.Default.Movie),
     BottomNavItem("Избранное", Screen.Favorites.route, Icons.Default.Favorite),
-    BottomNavItem("Настройки", Screen.Settings.route, Icons.Default.Settings)
+    BottomNavItem("Настройки", Screen.Settings.route, Icons.Default.Settings),
+    BottomNavItem("Профиль", Screen.Profile.route, Icons.Default.Person)
 )

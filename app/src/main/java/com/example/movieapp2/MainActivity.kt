@@ -1,5 +1,5 @@
 package com.example.movieapp2
-
+//Практика 5
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
